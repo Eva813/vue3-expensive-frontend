@@ -17,6 +17,9 @@ importers:
       vue-router:
         specifier: ^4.4.5
         version: 4.4.5(vue@3.5.13(typescript@5.6.3))
+      vue3-google-login:
+        specifier: ^2.0.33
+        version: 2.0.33(vue@3.5.13(typescript@5.6.3))
     devDependencies:
       '@playwright/test':
         specifier: ^1.48.2
@@ -1961,6 +1964,11 @@ packages:
     hasBin: true
     peerDependencies:
       typescript: '>=5.0.0'
+
+  vue3-google-login@2.0.33:
+    resolution: {integrity: sha512-Hx3JJUREXWCFOOB4AzZKy/x7C+X18kxmT0AquBekm0TRubp11nrWijOLEgmhuij48dQPNumyaAi5IQAeDKk7yw==}
+    peerDependencies:
+      vue: ^3.0.3
 
   vue@3.5.13:
     resolution: {integrity: sha512-wmeiSMxkZCSc+PM2w2VRsOYAZC8GdipNFRTsLSfodVqI9mbejKeXEGr8SckuLnrQPGe3oJN5c3K0vpoU9q/wCQ==}
@@ -3926,6 +3934,10 @@ snapshots:
       '@vue/language-core': 2.1.10(typescript@5.6.3)
       semver: 7.6.3
       typescript: 5.6.3
+
+  vue3-google-login@2.0.33(vue@3.5.13(typescript@5.6.3)):
+    dependencies:
+      vue: 3.5.13(typescript@5.6.3)
 
   vue@3.5.13(typescript@5.6.3):
     dependencies:
