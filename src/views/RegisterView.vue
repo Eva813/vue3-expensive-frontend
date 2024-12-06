@@ -2,7 +2,8 @@
     <div class="register-container">
         <div class="left-column">
             <h2>註冊</h2>
-            <button type="button" class="google-login-btn" @click="handleGoogleLogin">
+            <GoogleLogin :clientId="GOOGLE_CLIENT_ID" :callback="callback" />
+            <!-- <button type="button" class="google-login-btn" @click="handleGoogleLogin">
                 <div class="mx-2 flex items-center pl-3">
                     <svg class="mx-auto h-5 w-5" viewBox="0 0 24 24" width="24" height="24"
                         xmlns="http://www.w3.org/2000/svg">
@@ -19,7 +20,7 @@
                     </svg>
                 </div>
                 <span class="text-slate-500 group-hover:text-slate-600">Sing in with Google</span>
-            </button>
+            </button> -->
             <!-- <p>
                 {{ data }}
             </p> -->
@@ -49,7 +50,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { googleTokenLogin } from 'vue3-google-login'
+import { GoogleLogin } from 'vue3-google-login';
+import type { CallbackTypes } from "vue3-google-login";
 
 const username = ref('');
 const email = ref('');
@@ -58,14 +60,74 @@ const password = ref('');
 
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+// https://devbaji.github.io/vue3-google-login/#typescript
+const callback: CallbackTypes.CredentialCallback = async (response) => {
+    console.log('Credential JWT string', response);
 
-const handleGoogleLogin = () => {
-    googleTokenLogin({
-        clientId: GOOGLE_CLIENT_ID
-    }).then((response) => {
-        console.log(response)
-    })
-}
+    const idToken = response.credential;
+    console.log('ID Token:', idToken);
+
+    if (!idToken) {
+        console.error('ID Token is missing in the response.');
+        alert('獲取 ID Token 失敗，請重試。');
+        return;
+    }
+
+    try {
+        const serverResponse = await fetch('http://127.0.0.1:5000/google-auth/', {
+            method: 'POST',
+            body: JSON.stringify({
+                credential: idToken // 這裡是您從 Google 獲得的 credential
+            }),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        if (serverResponse.ok) {
+            const result = await serverResponse.json();
+            console.log('Google Login Success:', result);
+            alert('登入成功');
+            localStorage.setItem('authToken', result.token);
+        } else {
+            const errorResult = await serverResponse.json();
+            console.error('Google Login Failed:', errorResult);
+            alert('登入失敗：' + errorResult.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
+// const handleGoogleLogin = async () => {
+//     try {
+//         const response = await googleTokenLogin({
+//             clientId: GOOGLE_CLIENT_ID
+//         })
+//         console.log('Google Login Response:', response);
+
+//         const idToken = response.credential;  // Google 返回的 ID Token
+//         console.log('ID Token:', idToken);
+
+//         // 將 ID Token 發送到後端進行驗證
+//         const serverResponse = await fetch('http://127.0.0.1:5000/google-auth/', {
+//             method: 'POST',
+//             body: JSON.stringify({ idToken }),
+//             headers: { 'Content-Type': 'application/json' },
+//         });
+//         if (serverResponse.ok) {
+//             const result = await serverResponse.json();
+//             console.log('Google Login Success:', result);
+//             alert('登入成功');
+
+//             // 可以將 JWT Token 保存到 Local Storage 或 Cookie 中
+//             localStorage.setItem('authToken', result.token);
+//         } else {
+//             const errorResult = await serverResponse.json();
+//             console.error('Google Login Failed:', errorResult);
+//             alert('登入失敗：' + errorResult.message);
+//         }
+
+//     } catch (error) {
+//         console.error('Error:', error);
+//     }
+// }
 
 // const addTransaction = async () => {
 //   const data = {
