@@ -34,7 +34,7 @@ const addTransaction = async () => {
   price.value = '';
 
   try {
-    const response = await fetch('http://127.0.0.1:5000/item/', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/item/`, {
       method: 'POST',
       body: JSON.stringify(data),
       headers: { 'Content-Type': 'application/json' },
@@ -54,7 +54,7 @@ const removeItem = async (item: TransactionItem) => {
   const index = item_list.value.indexOf(item);
   if (index > -1) {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/item/${item._id.$oid}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/item/${item._id.$oid}`, {
         method: 'DELETE',
       });
       const result = await response.json();
@@ -78,7 +78,7 @@ const updateTotals = () => {
 
 onMounted(async () => {
   try {
-    const response = await fetch('http://127.0.0.1:5000/items/', { method: 'GET' });
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/items/`, { method: 'GET' });
     const result = await response.json();
     item_list.value = result;
     updateTotals();
