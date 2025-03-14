@@ -46,7 +46,11 @@ const addTransaction = async () => {
   }
 };
 
-const removeItem = async (item: { name: string; price: number; type: string; _id?: { $oid: string; } | undefined; }) => {
+const removeItem = async (item: TransactionItem) => {
+  if (!item._id) {
+    console.error('Cannot remove item: missing _id');
+    return;
+  }
   const index = item_list.value.indexOf(item);
   if (index > -1) {
     try {
