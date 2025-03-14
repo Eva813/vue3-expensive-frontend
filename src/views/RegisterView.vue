@@ -2,7 +2,9 @@
     <div class="register-container">
         <div class="left-column">
             <h2>註冊</h2>
-            <GoogleLogin :clientId="GOOGLE_CLIENT_ID" :callback="callback" />
+            <GoogleLogin :clientId="GOOGLE_CLIENT_ID" :callback="callback" flow="implicit">
+                <button class="custom-google-login-button">Login with Google</button>
+            </GoogleLogin>
             <!-- <button type="button" class="google-login-btn" @click="handleGoogleLogin">
                 <div class="mx-2 flex items-center pl-3">
                     <svg class="mx-auto h-5 w-5" viewBox="0 0 24 24" width="24" height="24"
@@ -52,7 +54,9 @@
 import { ref } from 'vue';
 import { GoogleLogin } from 'vue3-google-login';
 import type { CallbackTypes } from "vue3-google-login";
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const username = ref('');
 const email = ref('');
 const password = ref('');
@@ -61,10 +65,10 @@ const password = ref('');
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 // https://devbaji.github.io/vue3-google-login/#typescript
-const callback: CallbackTypes.CredentialCallback = async (response) => {
+const callback: CallbackTypes.CodeResponseCallback = async (response) => {
     console.log('Credential JWT string', response);
 
-    const idToken = response.credential;
+    const idToken = response.code;
     console.log('ID Token:', idToken);
 
     if (!idToken) {
@@ -77,7 +81,7 @@ const callback: CallbackTypes.CredentialCallback = async (response) => {
         const serverResponse = await fetch('http://127.0.0.1:5000/google-auth/', {
             method: 'POST',
             body: JSON.stringify({
-                credential: idToken // 這裡是您從 Google 獲得的 credential
+                code: idToken // 這裡是您從 Google 獲得的 credential （code）
             }),
             headers: { 'Content-Type': 'application/json' },
         });
@@ -86,6 +90,8 @@ const callback: CallbackTypes.CredentialCallback = async (response) => {
             console.log('Google Login Success:', result);
             alert('登入成功');
             localStorage.setItem('authToken', result.token);
+            // 跳轉到首頁
+            router.push('/');
         } else {
             const errorResult = await serverResponse.json();
             console.error('Google Login Failed:', errorResult);

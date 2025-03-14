@@ -1,20 +1,28 @@
 <script setup lang="ts">
-// import WelcomeItem from './WelcomeItem.vue'
-// import DocumentationIcon from './icons/IconDocumentation.vue'
-// import ToolingIcon from './icons/IconTooling.vue'
-// import EcosystemIcon from './icons/IconEcosystem.vue'
-// import CommunityIcon from './icons/IconCommunity.vue'
-// import SupportIcon from './icons/IconSupport.vue'
 import { ref, onMounted, computed } from 'vue';
 const name = ref('');
 const price = ref('');
 const income = ref(0);
 const expense = ref(0);
-const item_list = ref([]);
+interface TransactionItem {
+  name: string;
+  price: number;
+  type: string;
+  _id?: { $oid: string };
+}
+const item_list = ref<TransactionItem[]>([]);
 
 const totalBalance = computed(() => income.value + expense.value);
 
 const addTransaction = async () => {
+  // 嘗試將輸入的金額轉換成數字
+  const priceNumber = parseFloat(price.value);
+
+  // 如果轉換後不是有效數字，則中斷函數並印出錯誤訊息
+  if (isNaN(priceNumber)) {
+    console.error('Invalid price input');
+    return;
+  }
   const data = {
     name: name.value,
     price: parseFloat(price.value),
@@ -38,7 +46,7 @@ const addTransaction = async () => {
   }
 };
 
-const removeItem = async (item) => {
+const removeItem = async (item: { name: string; price: number; type: string; _id?: { $oid: string; } | undefined; }) => {
   const index = item_list.value.indexOf(item);
   if (index > -1) {
     try {
@@ -58,17 +66,16 @@ const removeItem = async (item) => {
 const updateTotals = () => {
   income.value = item_list.value
     .filter((item) => item.type === 'income')
-    .reduce((sum, item) => sum + parseFloat(item.price), 0);
+    .reduce((sum, item) => sum + item.price, 0);
   expense.value = item_list.value
     .filter((item) => item.type === 'outcome')
-    .reduce((sum, item) => sum + parseFloat(item.price), 0);
+    .reduce((sum, item) => sum + item.price, 0);
 };
 
 onMounted(async () => {
   try {
     const response = await fetch('http://127.0.0.1:5000/items/', { method: 'GET' });
     const result = await response.json();
-    console.log(result);
     item_list.value = result;
     updateTotals();
   } catch (error) {
@@ -95,7 +102,8 @@ onMounted(async () => {
 
     <h3>History</h3>
     <ul id="list" class="list">
-      <li :class="{ 'plus': item.price > 0, 'minus': item.price < 0 }" v-for="item in item_list" :key="item._id.$oid">
+      <li :class="{ 'plus': item.price > 0, 'minus': item.price < 0 }" v-for="(item, index) in item_list"
+        :key="item._id ? item._id.$oid : index">
         {{ item.name }} <span>{{ item.price }}</span>
         <button class="delete-btn" @click="removeItem(item)">x</button>
       </li>
